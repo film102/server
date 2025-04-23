@@ -41,10 +41,16 @@
       background-color: #0056b3;
     }
     .btn-back {
-      background-color: #3399ff;
+      background-color: #ff6666;
     }
     .btn-back:hover {
-      background-color: #267acc;
+      background-color: #fc4040;
+    }
+    .btn-advance {
+      background-color: #FF8C00;
+    }
+    .btn-advance:hover {
+      background-color: #FF6F00;
     }
     .title {
       text-align: center;
@@ -78,6 +84,7 @@
         <button class="btn" onclick="selectBuilding('C5')">อาคาร C5</button>
         <button class="btn" onclick="selectBuilding('FIRE')">วัตถุไวไฟ</button>
         <button class="btn" onclick="selectBuilding('ATK')">เต็นท์ ATK</button>
+        <button class="btn btn-advance" onclick="window.location.href='index2.html'">Advance option</button>
       `;
     }
 
@@ -174,14 +181,16 @@
     function goBack() {
       if (state.area && state.col) {
         selectC5RackLevel(state.area, state.col);
-      } else if (state.area) {
-        selectC5Area(state.area);
-      } else if (state.building === 'C7' && state.row) {
+      } else if (state.row) {
         selectC7Row(state.row);
-      } else if (state.building) {
-        selectBuilding(state.building);
-      } else {
-        renderHome();
+      } else if (state.building === 'C5') {
+        selectBuilding('C5');
+      } else if (state.building === 'C7') {
+        selectBuilding('C7');
+      } else if (state.building === 'FIRE') {
+        selectBuilding('FIRE');
+      } else if (state.building === 'ATK') {
+        selectBuilding('ATK');
       }
     }
 
