@@ -63,21 +63,39 @@
 
     .buttons {
       margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
     }
 
-    .buttons button {
+    .buttons button,
+    .custom-file-upload {
       padding: 10px 20px;
-      margin: 5px;
       border: none;
       border-radius: 6px;
-      background-color: #2980b9;
-      color: white;
       font-size: 14px;
       cursor: pointer;
+      color: white;
+      background-color: #2980b9;
+      transition: background-color 0.2s ease-in-out;
     }
 
-    .buttons button:hover {
+    .buttons button:hover,
+    .custom-file-upload:hover {
       background-color: #1c5985;
+    }
+
+    .custom-file-upload {
+      background-color: #27ae60;
+    }
+
+    .custom-file-upload:hover {
+      background-color: #1e8449;
+    }
+
+    .custom-file-upload input[type="file"] {
+      display: none;
     }
 
     #generated-qr {
@@ -87,6 +105,21 @@
 
     #generated-qr img {
       width: 280px;
+    }
+
+    .btn-back {
+      background-color: #ff6666;
+      color: white;
+      padding: 10px 20px;
+      margin: 30px 0;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .btn-back:hover {
+      background-color: #ff4d4d;
     }
 
     @media (max-width: 480px) {
@@ -113,30 +146,21 @@
         max-width: 300px;
       }
     }
-
-    .btn-back {
-      background-color: #ff6666;
-      color: white;
-      padding: 10px 20px;
-      margin-top: 20px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      text-decoration: none;
-    }
-
-    .btn-back:hover {
-      background-color: #ff4d4d;
-    }
   </style>
 </head>
 <body>
   <h2>📷 สแกน QR Code</h2>
+
   <div class="buttons">
     <button onclick="startCamera()">เปิดกล้อง</button>
     <button onclick="stopCamera()">ปิดกล้อง</button>
     <button onclick="clearData()">ล้างข้อมูล</button>
+    <label class="custom-file-upload">
+      📁 แนบรูปจากเครื่อง
+      <input type="file" id="image-file" accept="image/*" onchange="scanFromImage()" />
+    </label>
   </div>
+
   <div id="reader"></div>
 
   <h3>📦 ข้อมูลสินค้า</h3>
@@ -156,7 +180,6 @@
 
   <div id="generated-qr"></div>
 
-  <!-- ปุ่มย้อนกลับ -->
   <a href="index.html" class="btn-back">ย้อนกลับ</a>
 
   <script>
@@ -173,6 +196,7 @@
         document.getElementById("type").textContent = parts[2];
         document.getElementById("weight").value = parts[3];
         document.getElementById("doc").textContent = parts[4];
+        stopCamera(); // ปิดกล้องอัตโนมัติหลังสแกน
       } else {
         alert("⚠️ ข้อมูล QR ไม่ถูกต้อง หรือมีส่วนขาดหาย");
       }
@@ -219,6 +243,27 @@
       } else {
         alert("⚠️ ยังไม่มีข้อมูลสำหรับสร้าง QR");
       }
+    }
+
+    function scanFromImage() {
+      const input = document.getElementById("image-file");
+      const file = input.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        Html5Qrcode.getCameras().then(() => {
+          Html5QrcodeScanner.hasCameraPermissions = true; // bypass permission
+        });
+
+        const qr = new Html5Qrcode("reader");
+        qr.scanFile(file, true)
+          .then(onScanSuccess)
+          .catch(err => {
+            alert("❌ ไม่สามารถอ่าน QR จากรูปภาพได้");
+          });
+      };
+      reader.readAsDataURL(file);
     }
   </script>
 </body>
