@@ -107,7 +107,7 @@
         main.innerHTML += `<button class="btn btn-back" onclick="renderHome()">ย้อนกลับ</button>`;
       } else if (building === 'FIRE') {
         main.innerHTML = '<div class="title">เลือกช่อง</div>';
-        main.innerHTML += `<button class="btn" onclick="generateQRCode('C106-00-00')">พื้น</button>`;
+        main.innerHTML += `<button class="btn" onclick="generateQRCode('C106-06-06')">พื้น</button>`;
         for (let i = 1; i <= 6; i++) {
           main.innerHTML += `<button class="btn" onclick="generateQRCode('C101-01-${String(i).padStart(2, '0')}')">ช่อง ${i}</button>`;
         }
@@ -134,10 +134,11 @@
     }
 
     function selectC5FrontBack(area) {
+      state.area = area;
       main.innerHTML = `<div class="title">เลือกช่องของวางพื้น${area === '01' ? ' ด้านหน้า' : ' ด้านหลัง'}</div>`;
       for (let i = 1; i <= 10; i++) {
         const code = `C051-${area}-${String(i).padStart(2, '0')}`;
-        main.innerHTML += `<button class="btn" onclick="generateQRCode('${code}')">ช่อง ${i}</button>`;
+        main.innerHTML += `<button class="btn" onclick="generateQRCode('${code}', 'frontback')">ช่อง ${i}</button>`;
       }
       main.innerHTML += `<button class="btn btn-back" onclick="selectBuilding('C5')">ย้อนกลับ</button>`;
     }
@@ -167,19 +168,22 @@
       main.innerHTML += `<button class="btn btn-back" onclick="selectC5Area('${area}')">ย้อนกลับ</button>`;
     }
 
-    function generateQRCode(code) {
+    function generateQRCode(code, mode = '') {
       state.lastCode = code;
+      state.lastMode = mode;
       main.innerHTML = `
-        <div class="title">QR Code</div>
+        <div class="title">QR Code ที่ได้</div>
         <div id="qrcode"></div>
-        <div id="codeText">ช่อง: ${code}</div>
+        <div id="codeText">QR Code สำหรับรหัสช่อง: ${code}</div>
         <button class="btn btn-back" onclick="goBack()">ย้อนกลับ</button>
       `;
       new QRCode(document.getElementById('qrcode'), code);
     }
 
     function goBack() {
-      if (state.area && state.col) {
+      if (state.lastMode === 'frontback') {
+        selectC5FrontBack(state.area);
+      } else if (state.area && state.col) {
         selectC5RackLevel(state.area, state.col);
       } else if (state.row) {
         selectC7Row(state.row);
