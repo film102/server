@@ -107,7 +107,7 @@
         main.innerHTML += `<button class="btn btn-back" onclick="renderHome()">ย้อนกลับ</button>`;
       } else if (building === 'FIRE') {
         main.innerHTML = '<div class="title">เลือกช่อง</div>';
-        main.innerHTML += `<button class="btn" onclick="generateQRCode('C106-06-06')">พื้น</button>`;
+        main.innerHTML += `<button class="btn" onclick="generateQRCode('C106-00-00')">พื้น</button>`;
         for (let i = 1; i <= 6; i++) {
           main.innerHTML += `<button class="btn" onclick="generateQRCode('C101-01-${String(i).padStart(2, '0')}')">ช่อง ${i}</button>`;
         }
