@@ -170,9 +170,9 @@
     function generateQRCode(code) {
       state.lastCode = code;
       main.innerHTML = `
-        <div class="title">QR Code ที่ได้</div>
+        <div class="title">QR Code</div>
         <div id="qrcode"></div>
-        <div id="codeText">QR Code สำหรับรหัสช่อง: ${code}</div>
+        <div id="codeText">ช่อง: ${code}</div>
         <button class="btn btn-back" onclick="goBack()">ย้อนกลับ</button>
       `;
       new QRCode(document.getElementById('qrcode'), code);
