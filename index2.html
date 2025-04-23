@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QR Scanner & Generator</title>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f6f9;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h2, h3 {
+      margin-top: 30px;
+      color: #2c3e50;
+    }
+
+    #reader {
+      width: 320px;
+      margin-top: 20px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+      border-radius: 12px;
+      overflow: hidden;
+      display: none;
+    }
+
+    #result {
+      margin-top: 30px;
+      background: white;
+      padding: 20px 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.07);
+      max-width: 420px;
+      width: 90%;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+
+    .row strong {
+      color: #555;
+      width: 150px;
+    }
+
+    input[type="text"] {
+      padding: 6px 8px;
+      font-size: 16px;
+      width: 120px;
+    }
+
+    .buttons {
+      margin-top: 20px;
+    }
+
+    .buttons button {
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 6px;
+      background-color: #2980b9;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .buttons button:hover {
+      background-color: #1c5985;
+    }
+
+    #generated-qr {
+      margin-top: 25px;
+      text-align: center;
+    }
+
+    #generated-qr img {
+      width: 280px;
+    }
+
+    @media (max-width: 480px) {
+      #reader {
+        width: 90%;
+      }
+
+      input[type="text"] {
+        width: 100px;
+      }
+
+      .row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .row strong {
+        width: auto;
+        margin-bottom: 5px;
+      }
+
+      #generated-qr img {
+        width: 100%;
+        max-width: 300px;
+      }
+    }
+
+    .btn-back {
+      background-color: #ff6666;
+      color: white;
+      padding: 10px 20px;
+      margin-top: 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .btn-back:hover {
+      background-color: #ff4d4d;
+    }
+  </style>
+</head>
+<body>
+  <h2>📷 สแกน QR Code</h2>
+  <div class="buttons">
+    <button onclick="startCamera()">เปิดกล้อง</button>
+    <button onclick="stopCamera()">ปิดกล้อง</button>
+    <button onclick="clearData()">ล้างข้อมูล</button>
+  </div>
+  <div id="reader"></div>
+
+  <h3>📦 ข้อมูลสินค้า</h3>
+  <div id="result">
+    <div class="row"><strong>รหัสสินค้า:</strong><span id="code">-</span></div>
+    <div class="row"><strong>Lot สินค้า:</strong><span id="lot">-</span></div>
+    <div class="row"><strong>รูปแบบจัดเก็บ:</strong><span id="type">-</span></div>
+    <div class="row">
+      <strong>น้ำหนัก (kg):</strong>
+      <div>
+        <input type="text" id="weight" value="-" />
+        <button onclick="generateQR()">สร้าง</button>
+      </div>
+    </div>
+    <div class="row"><strong>เลขที่เอกสาร:</strong><span id="doc">-</span></div>
+  </div>
+
+  <div id="generated-qr"></div>
+
+  <!-- ปุ่มย้อนกลับ -->
+  <a href="index.html" class="btn-back">ย้อนกลับ</a>
+
+  <script>
+    let html5QrCode;
+    let cameraRunning = false;
+    let lastData = [];
+
+    function onScanSuccess(decodedText) {
+      const parts = decodedText.split("^");
+      if (parts.length >= 5) {
+        lastData = parts;
+        document.getElementById("code").textContent = parts[0];
+        document.getElementById("lot").textContent = parts[1];
+        document.getElementById("type").textContent = parts[2];
+        document.getElementById("weight").value = parts[3];
+        document.getElementById("doc").textContent = parts[4];
+      } else {
+        alert("⚠️ ข้อมูล QR ไม่ถูกต้อง หรือมีส่วนขาดหาย");
+      }
+    }
+
+    function startCamera() {
+      if (cameraRunning) return;
+      document.getElementById("reader").style.display = "block";
+      html5QrCode = new Html5Qrcode("reader");
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        onScanSuccess
+      ).then(() => cameraRunning = true);
+    }
+
+    function stopCamera() {
+      if (html5QrCode && cameraRunning) {
+        html5QrCode.stop().then(() => {
+          cameraRunning = false;
+          document.getElementById("reader").style.display = "none";
+        });
+      }
+    }
+
+    function clearData() {
+      document.getElementById("code").textContent = "-";
+      document.getElementById("lot").textContent = "-";
+      document.getElementById("type").textContent = "-";
+      document.getElementById("weight").value = "-";
+      document.getElementById("doc").textContent = "-";
+      document.getElementById("generated-qr").innerHTML = "";
+      lastData = [];
+    }
+
+    function generateQR() {
+      if (lastData.length >= 5) {
+        const newWeight = document.getElementById("weight").value;
+        const newCode = `${lastData[0]}^${lastData[1]}^${lastData[2]}^${newWeight}^${lastData[4]}`;
+        QRCode.toDataURL(newCode, function (err, url) {
+          document.getElementById("generated-qr").innerHTML =
+            `<p><strong>🔁 QR ใหม่:</strong></p><img src="${url}" />`;
+        });
+      } else {
+        alert("⚠️ ยังไม่มีข้อมูลสำหรับสร้าง QR");
+      }
+    }
+  </script>
+</body>
+</html>
