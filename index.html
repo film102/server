@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>QR Code Generator - Warehouse</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f0f2f5;
+    }
+    .container {
+      max-width: 400px;
+      margin: auto;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .btn {
+      width: 100%;
+      padding: 14px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .btn:hover {
+      background-color: #0056b3;
+    }
+    .btn-back {
+      background-color: #3399ff;
+    }
+    .btn-back:hover {
+      background-color: #267acc;
+    }
+    .title {
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    #qrcode {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+    }
+    #codeText {
+      margin-top: 10px;
+      font-weight: bold;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="main"></div>
+  <script>
+    let state = {};
+
+    const main = document.getElementById('main');
+
+    function renderHome() {
+      state = {};
+      main.innerHTML = `
+        <div class="title">เลือกอาคาร</div>
+        <button class="btn" onclick="selectBuilding('C7')">อาคาร C7</button>
+        <button class="btn" onclick="selectBuilding('C5')">อาคาร C5</button>
+        <button class="btn" onclick="selectBuilding('FIRE')">วัตถุไวไฟ</button>
+        <button class="btn" onclick="selectBuilding('ATK')">เต็นท์ ATK</button>
+      `;
+    }
+
+    function selectBuilding(building) {
+      state.building = building;
+      if (building === 'C7') {
+        main.innerHTML = '<div class="title">เลือกแถว</div>';
+        main.innerHTML += `<button class="btn" onclick="generateQRCode('C071-00-00')">พื้น</button>`;
+        [1, 2, 3, 4].forEach(r => {
+          main.innerHTML += `<button class="btn" onclick="selectC7Row(${r})">แถว ${r}</button>`;
+        });
+        main.innerHTML += `<button class="btn btn-back" onclick="renderHome()">ย้อนกลับ</button>`;
+      } else if (building === 'C5') {
+        main.innerHTML = '<div class="title">เลือกพื้นที่</div>';
+        main.innerHTML += `<button class="btn" onclick="generateQRCode('C056-00-00')">พื้น</button>`;
+        main.innerHTML += `<button class="btn" onclick="selectC5FrontBack('01')">ของวางพื้น ด้านหน้า</button>`;
+        main.innerHTML += `<button class="btn" onclick="selectC5FrontBack('02')">ของวางพื้น ด้านหลัง</button>`;
+        main.innerHTML += `<button class="btn" onclick="selectC5Area('03')">ชัตเตอร์แลค</button>`;
+        main.innerHTML += `<button class="btn" onclick="selectC5Area('04')">โฟร์แลค</button>`;
+        main.innerHTML += `<button class="btn btn-back" onclick="renderHome()">ย้อนกลับ</button>`;
+      } else if (building === 'FIRE') {
+        main.innerHTML = '<div class="title">เลือกช่อง</div>';
+        main.innerHTML += `<button class="btn" onclick="generateQRCode('C106-06-06')">พื้น</button>`;
+        for (let i = 1; i <= 6; i++) {
+          main.innerHTML += `<button class="btn" onclick="generateQRCode('C101-01-${String(i).padStart(2, '0')}')">ช่อง ${i}</button>`;
+        }
+        main.innerHTML += `<button class="btn btn-back" onclick="renderHome()">ย้อนกลับ</button>`;
+      } else if (building === 'ATK') {
+        main.innerHTML = '<div class="title">เลือกช่อง</div>';
+        main.innerHTML += `<button class="btn" onclick="generateQRCode('T046-00-00')">พื้น</button>`;
+        for (let i = 1; i <= 19; i++) {
+          main.innerHTML += `<button class="btn" onclick="generateQRCode('T041-01-${String(i).padStart(2, '0')}')">ช่อง ${i}</button>`;
+        }
+        main.innerHTML += `<button class="btn btn-back" onclick="renderHome()">ย้อนกลับ</button>`;
+      }
+    }
+
+    function selectC7Row(row) {
+      state.row = row;
+      let max = (row === 1 || row === 4) ? 7 : 5;
+      main.innerHTML = `<div class="title">เลือกช่องในแถว ${row}</div>`;
+      for (let i = 1; i <= max; i++) {
+        const code = `C071-0${row}-${String(i).padStart(2, '0')}`;
+        main.innerHTML += `<button class="btn" onclick="generateQRCode('${code}')">ช่อง ${i}</button>`;
+      }
+      main.innerHTML += `<button class="btn btn-back" onclick="selectBuilding('C7')">ย้อนกลับ</button>`;
+    }
+
+    function selectC5FrontBack(area) {
+      main.innerHTML = `<div class="title">เลือกช่องของวางพื้น${area === '01' ? ' ด้านหน้า' : ' ด้านหลัง'}</div>`;
+      for (let i = 1; i <= 10; i++) {
+        const code = `C051-${area}-${String(i).padStart(2, '0')}`;
+        main.innerHTML += `<button class="btn" onclick="generateQRCode('${code}')">ช่อง ${i}</button>`;
+      }
+      main.innerHTML += `<button class="btn btn-back" onclick="selectBuilding('C5')">ย้อนกลับ</button>`;
+    }
+
+    function selectC5Area(area) {
+      state.area = area;
+      const max = area === '03' ? 'V' : 'N';
+      const letters = [];
+      for (let i = 'A'.charCodeAt(0); i <= max.charCodeAt(0); i++) {
+        letters.push(String.fromCharCode(i));
+      }
+      main.innerHTML = '<div class="title">เลือกช่อง</div>';
+      letters.forEach(l => {
+        main.innerHTML += `<button class="btn" onclick="selectC5RackLevel('${area}', '${l}')">ช่อง ${l}</button>`;
+      });
+      main.innerHTML += `<button class="btn btn-back" onclick="selectBuilding('C5')">ย้อนกลับ</button>`;
+    }
+
+    function selectC5RackLevel(area, col) {
+      state.col = col;
+      main.innerHTML = `<div class="title">เลือกชั้นของช่อง ${col}</div>`;
+      [1, 2, 3, 4].forEach(lv => {
+        const colNum = col.charCodeAt(0) - 'A'.charCodeAt(0) + 1;
+        const finalCode = (area === '03') ? `C053-${String(colNum).padStart(2, '0')}-${String(lv).padStart(2, '0')}` : `C054-${String(colNum).padStart(2, '0')}-${String(lv).padStart(2, '0')}`;
+        main.innerHTML += `<button class="btn" onclick="generateQRCode('${finalCode}')">ชั้น ${lv}</button>`;
+      });
+      main.innerHTML += `<button class="btn btn-back" onclick="selectC5Area('${area}')">ย้อนกลับ</button>`;
+    }
+
+    function generateQRCode(code) {
+      state.lastCode = code;
+      main.innerHTML = `
+        <div class="title">QR Code ที่ได้</div>
+        <div id="qrcode"></div>
+        <div id="codeText">QR Code สำหรับรหัสช่อง: ${code}</div>
+        <button class="btn btn-back" onclick="goBack()">ย้อนกลับ</button>
+      `;
+      new QRCode(document.getElementById('qrcode'), code);
+    }
+
+    function goBack() {
+      if (state.area && state.col) {
+        selectC5RackLevel(state.area, state.col);
+      } else if (state.area) {
+        selectC5Area(state.area);
+      } else if (state.building === 'C7' && state.row) {
+        selectC7Row(state.row);
+      } else if (state.building) {
+        selectBuilding(state.building);
+      } else {
+        renderHome();
+      }
+    }
+
+    renderHome();
+  </script>
+</body>
+</html>
